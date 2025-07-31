@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Paleta de Cores Coral</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f9f9f9;
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    #filtro {
+      width: 100%;
+      max-width: 400px;
+      padding: 8px 12px;
+      margin-bottom: 20px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    .cor-item {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 10px;
+      padding: 12px;
+      border-radius: 6px;
+      box-shadow: 0 0 5px #ccc;
+      background: white;
+    }
+    .bloco-cor {
+      width: 60px;
+      height: 60px;
+      border-radius: 6px;
+      margin-right: 15px;
+      margin-bottom: 10px;
+      border: 1px solid #aaa;
+      flex-shrink: 0;
+    }
+    .detalhes {
+      font-size: 14px;
+      color: #333;
+      flex-grow: 1;
+      min-width: 200px;
+      margin-bottom: 10px;
+    }
+    .nome {
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    .botoes {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 140px;
+    }
+    button {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+      font-size: 13px;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .copiado-msg {
+      font-size: 12px;
+      color: green;
+      margin-top: 2px;
+      height: 14px;
+    }
+
+    /* Responsividade */
+    @media (max-width: 600px) {
+      .cor-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .bloco-cor {
+        margin-right: 0;
+        margin-bottom: 10px;
+      }
+      .botoes {
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .botoes button {
+        flex: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Paleta de Cores Coral</h1>
+  <input type="text" id="filtro" placeholder="Pesquisar pelo nome da cor..." />
+
+  <div id="paleta"></div>
+
+  <script>
+    let cores = [];
+
+    function copiarTexto(texto, botao) {
+      navigator.clipboard.writeText(texto).then(() => {
+        const msg = botao.nextElementSibling;
+        msg.textContent = "Copiado!";
+        setTimeout(() => { msg.textContent = ""; }, 1500);
+      }).catch(err => {
+        alert('Erro ao copiar: ' + err);
+      });
+    }
+
+    function mostrarCores(listaCores) {
+      const container = document.getElementById('paleta');
+      container.innerHTML = '';
+
+      listaCores.forEach(cor => {
+        const item = document.createElement('div');
+        item.className = 'cor-item';
+
+        const bloco = document.createElement('div');
+        bloco.className = 'bloco-cor';
+        bloco.style.backgroundColor = cor.hex;
+
+        const detalhes = document.createElement('div');
+        detalhes.className = 'detalhes';
+        detalhes.innerHTML = `
+          <div class="nome">${cor.nome}</div>
+          <div>RGB: ${cor.rgb.join(', ')}</div>
+          <div>HEX: ${cor.hex}</div>
+        `;
+
+        const botoesDiv = document.createElement('div');
+        botoesDiv.className = 'botoes';
+
+        const btnCopiarRGB = document.createElement('button');
+        btnCopiarRGB.textContent = 'Copiar RGB';
+        btnCopiarRGB.onclick = () => copiarTexto(cor.rgb.join(', '), btnCopiarRGB);
+
+        const msgRGB = document.createElement('div');
+        msgRGB.className = 'copiado-msg';
+
+        const btnCopiarHEX = document.createElement('button');
+        btnCopiarHEX.textContent = 'Copiar HEX';
+        btnCopiarHEX.onclick = () => copiarTexto(cor.hex, btnCopiarHEX);
+
+        const msgHEX = document.createElement('div');
+        msgHEX.className = 'copiado-msg';
+
+        botoesDiv.appendChild(btnCopiarRGB);
+        botoesDiv.appendChild(msgRGB);
+        botoesDiv.appendChild(btnCopiarHEX);
+        botoesDiv.appendChild(msgHEX);
+
+        item.appendChild(bloco);
+        item.appendChild(detalhes);
+        item.appendChild(botoesDiv);
+
+        container.appendChild(item);
+      });
+    }
+
+    fetch('cores.json')
+      .then(response => response.json())
+      .then(data => {
+        cores = data;
+        mostrarCores(cores);
+      })
+      .catch(err => {
+        document.getElementById('paleta').innerText = 'Erro ao carregar cores: ' + err;
+      });
+
+    document.getElementById('filtro').addEventListener('input', function () {
+      const texto = this.value.toLowerCase();
+      const filtradas = cores.filter(cor => cor.nome.toLowerCase().includes(texto));
+      mostrarCores(filtradas);
+    });
+  </script>
+
+</body>
+</html>
